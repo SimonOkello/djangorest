@@ -1,2 +1,2 @@
 # djangorest
-This is the Oficial Django RestFramework Tutorial
+This is the Official Django RestFramework Tutorial
