@@ -1,17 +1,17 @@
 from rest_framework import serializers
 from . models import Snippet, LANGUANGE_CHOICES, STYLE_CHOICES
+from django.contrib.auth.models import User
 
-class SnippetSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    title = serializers.CharField(required=False, allow_blank = True, max_length=100)
-    code = serializers.CharField(style={'base_template':'textarea.html'})
-    linenos = serializers.BooleanField(required=False)
-    language = serializers.ChoiceField(choices = LANGUANGE_CHOICES, default= 'python')
-    style = serializers.ChoiceField(choices = STYLE_CHOICES, default= 'friendly')
+
+class SnippetSerializer(serializers.HyperlinkedModelSerializer):
+    
+    owner = serializers.ReadOnlyField(source='owner.username')
+    highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format = 'html')
 
     class Meta:
         model = Snippet
-        fields = ['id', 'title', 'code', 'linenos', 'languages', 'styles']
+        fields = ['url', 'id', 'highlight', 'title', 'code', 'linenos',
+                  'language', 'style', 'owner']
 
     def create(self, validated_data):
         """
@@ -32,4 +32,9 @@ class SnippetSerializer(serializers.Serializer):
         return instance
 
 
-    
+class UserSerializer(serializers.ModelSerializer):
+    snippets = serializers.HyperlinkedRelatedField(many=True, view_name='snippet-detail', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('url', 'id', 'username', 'snippets')
